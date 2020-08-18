@@ -1,10 +1,14 @@
-FROM mariadb:10.1
+FROM mariadb:10.5
 MAINTAINER toughiq@gmail.com
 
 RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
     
-COPY scripts/ /docker-entrypoint-initdb.d/.
+COPY ["scripts/", "/docker-entrypoint-initdb.d/"]
+COPY ["bin/preflight.sh", "/usr/local/bin/"]
+
+RUN chmod 755 /usr/local/bin/preflight.sh; \
+    sed -i '/exec "$@"/i /usr/local/bin/preflight.sh' /usr/local/bin/docker-entrypoint.sh
 
 # we need to touch and chown config files, since we cant write as mysql user
 RUN touch /etc/mysql/conf.d/galera.cnf \
